@@ -41,6 +41,15 @@ uv sync --extra dev --link-mode copy
 
 ## Run pytest then
 uv run pytest tests/test_compare.py -v
+
+## Run coverage tests
+
+# optional if just not installed
+uv tool install rust-just --link-mode copy
+
+# Run coverage python version tests
+just coverage
+
 ```
 
 

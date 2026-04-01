@@ -1,5 +1,8 @@
 # Justfile for validation-suite
 
+# Set shell
+set shell := ["powershell.exe", "-Command"]
+
 # Show available commands
 list:
     @just --list
