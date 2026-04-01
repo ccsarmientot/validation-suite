@@ -12,6 +12,19 @@ def vif_check(
     Values > 10 indicate problematic multicollinearity.
     """
     X = df[feature_cols].dropna()
+
+    if len(feature_cols) == 1:
+        return ValidationResult(
+        test_name="vif_check",
+        status='PASS',
+        summary_df=pd.DataFrame({
+            "feature": feature_cols,
+            "VIF": 1,
+        }),
+        details={"threshold": threshold, "flagged_features": [0]},
+        warnings=[],
+    )
+
     vif_data = pd.DataFrame({
         "feature": feature_cols,
         "VIF": [variance_inflation_factor(X.values, i) for i in range(len(feature_cols))],

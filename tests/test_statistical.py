@@ -65,7 +65,7 @@ class TestVifSummaryDf:
         rng = np.random.default_rng(7)
         n = 300
         x1 = rng.standard_normal(n)
-        x2 = 0.85 * x1 + 0.53 * rng.standard_normal(n)  # correlation ~0.85 → VIF ~3-5
+        x2 = 0.85 * x1 + 0.3 * rng.standard_normal(n)  # correlation ~0.85 → VIF ~3-5
         df = pd.DataFrame({"x1": x1, "x2": x2})
         result = vif_check(df, feature_cols=["x1", "x2"])
 

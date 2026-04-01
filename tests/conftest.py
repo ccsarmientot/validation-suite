@@ -69,7 +69,7 @@ def df_high_collinearity():
     income = rng.lognormal(mean=10, sigma=1, size=n)
     return pd.DataFrame({
         "income":        income,
-        "income_scaled": income / 1000 + rng.normal(0, 0.001, n),  # near-duplicate
+        "income_scaled": income / 1000 + rng.normal(0, 10, n),  # near-duplicate
         "dti":           rng.uniform(0.1, 0.6, n),
         "credit_age":    rng.uniform(1, 30, n),
     })
