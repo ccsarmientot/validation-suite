@@ -73,7 +73,7 @@ class TestCompareEdgeCases:
         cha = pd.DataFrame(columns=cols)
         result = compare_dataframes(ref, cha, key_cols=["obligor_id"])
 
-        assert result.summary_df.empty # or result.summary_df["rows_exceeding_tol"].sum() == 0
+        assert result.summary_df.empty or result.summary_df["rows_exceeding_tol"].sum() == 0
 
     def test_solo_columna_clave_no_crashea(self):
         """Edge case: DataFrames with only the key column and no numeric columns."""

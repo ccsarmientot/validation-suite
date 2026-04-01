@@ -40,18 +40,22 @@ def compare_dataframes(
         on=key_cols, suffixes=("_ref", "_cha")
     )
 
-    print(merged)
-
     # 3. Numeric diff per column
     numeric_cols = df_reference[common_cols].select_dtypes(include="number").columns.tolist()
     diff_records = {}
-    for col in numeric_cols:
-        diff = (merged[f"{col}_ref"] - merged[f"{col}_cha"]).abs()
-        diff_records[col] = {
-            "max_abs_diff": diff.max(),
-            "mean_abs_diff": diff.mean(),
-            "rows_exceeding_tol": int((diff > numeric_tol).sum()),
-        }
+    diff_records['index'] = {
+        "max_abs_diff": 0,
+        "mean_abs_diff": 0,
+        "rows_exceeding_tol": 0,
+    }
+    if numeric_cols:
+        for col in numeric_cols:
+            diff = (merged[f"{col}_ref"] - merged[f"{col}_cha"]).abs()
+            diff_records[col] = {
+                "max_abs_diff": diff.max(),
+                "mean_abs_diff": diff.mean(),
+                "rows_exceeding_tol": int((diff > numeric_tol).sum()),
+            }
 
     summary_df = pd.DataFrame(diff_records).T.reset_index().rename(columns={"index": "column"})
     status = "PASS" if summary_df["rows_exceeding_tol"].max() == 0 else "FAIL"
