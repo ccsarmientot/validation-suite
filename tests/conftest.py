@@ -73,3 +73,114 @@ def df_high_collinearity():
         "dti":           rng.uniform(0.1, 0.6, n),
         "credit_age":    rng.uniform(1, 30, n),
     })
+
+
+# ── Fixtures stability ────────────────────────────────────────────────────────
+
+
+@pytest.fixture
+def dist_stable():
+    """
+    Expected and actual drawn from the same distribution.
+    PSI should be near zero — STABLE.
+    """
+    rng = np.random.default_rng(42)
+    n = 2000
+    expected = pd.DataFrame({"pd_score": rng.beta(2, 18, n)})
+    actual   = pd.DataFrame({"pd_score": rng.beta(2, 18, n)})
+    return expected, actual
+
+
+@pytest.fixture
+def dist_moderate_shift():
+    """
+    Actual distribution shifted moderately (beta params changed slightly).
+    PSI should land in the MODERATE band (0.10 – 0.25).
+    """
+    rng = np.random.default_rng(0)
+    n = 2000
+    expected = pd.DataFrame({"pd_score": rng.beta(2, 18, n)})
+    actual   = pd.DataFrame({"pd_score": rng.beta(3, 14, n)})  # shifted right
+    return expected, actual
+
+
+@pytest.fixture
+def dist_unstable_shift():
+    """
+    Actual distribution severely shifted — simulates a portfolio
+    quality deterioration between development and monitoring periods.
+    PSI should be > 0.25 — UNSTABLE.
+    """
+    rng = np.random.default_rng(1)
+    n = 2000
+    expected = pd.DataFrame({"pd_score": rng.beta(2, 18, n)})
+    actual   = pd.DataFrame({"pd_score": rng.beta(8,  4, n)})  # heavy shift
+    return expected, actual
+
+
+@pytest.fixture
+def dist_multivar():
+    """
+    Multi-variable DataFrame: one stable variable, one unstable.
+    Used to validate per-variable summary and mixed statuses.
+    """
+    rng = np.random.default_rng(7)
+    n = 2000
+    expected = pd.DataFrame({
+        "pd_score": rng.beta(2, 18, n),
+        "ltv":      rng.uniform(0.3, 0.9, n),   # stable
+    })
+    actual = pd.DataFrame({
+        "pd_score": rng.beta(8, 4, n),           # unstable
+        "ltv":      rng.uniform(0.3, 0.9, n),   # stable
+    })
+    return expected, actual
+
+
+@pytest.fixture
+def dist_with_nans():
+    """Expected and actual with ~5% NaNs — should not crash."""
+    rng = np.random.default_rng(99)
+    n = 1000
+    scores_exp = rng.beta(2, 18, n).astype(float)
+    scores_act = rng.beta(2, 18, n).astype(float)
+    scores_exp[rng.choice(n, size=50, replace=False)] = np.nan
+    scores_act[rng.choice(n, size=50, replace=False)] = np.nan
+    return (
+        pd.DataFrame({"pd_score": scores_exp}),
+        pd.DataFrame({"pd_score": scores_act}),
+    )
+
+
+@pytest.fixture
+def csi_frames():
+    """
+    Segmented DataFrames for CSI tests.
+
+    Segments:
+      - 'Low'    : stable across expected / actual
+      - 'Medium' : moderate shift
+      - 'High'   : severe shift (simulates grade migration)
+    """
+    rng = np.random.default_rng(3)
+    n_per_seg = 600
+
+    def _make(segment, a, b):
+        return pd.DataFrame({
+            "pd_score":   rng.beta(a, b, n_per_seg),
+            "risk_grade": segment,
+        })
+
+    expected = pd.concat([
+        _make("Low",    a=1,  b=30),
+        _make("Medium", a=3,  b=15),
+        _make("High",   a=8,  b=5),
+    ], ignore_index=True)
+
+    actual = pd.concat([
+        _make("Low",    a=1,  b=30),   # stable
+        _make("Medium", a=4,  b=12),   # moderate shift
+        _make("High",   a=15, b=3),    # severe shift
+    ], ignore_index=True)
+
+    return expected, actual
