@@ -5,7 +5,7 @@
 A unified framework for consistent validation across multiple projects and use cases.
 
 * [GitHub](https://github.com/ccsarmientot/validation-suite/) | [PyPI](https://pypi.org/project/validation-suite/) | [Documentation](https://ccsarmientot.github.io/validation-suite/)
-* Created by [+Cristian C. Sarmiento](https://github.com/ccsarmientot) | GitHub [@ccsarmientot](https://github.com/ccsarmientot) | PyPI [@ccsarmientot](https://pypi.org/user/ccsarmientot/)
+* Created by [Cristian C. Sarmiento](http://linkedin.com/in/ccsarmientot) | GitHub [@ccsarmientot](https://github.com/ccsarmientot) | PyPI [@ccsarmientot](https://pypi.org/user/ccsarmientot/)
 * MIT License
 
 ## Features
@@ -59,6 +59,6 @@ just qa
 
 ## Author
 
-MRMU Validation Suite was created in 2026 by +Cristian C. Sarmiento.
+MRMU Validation Suite was created in 2026 by Cristian C. Sarmiento.
 
 Built with [Cookiecutter](https://github.com/cookiecutter/cookiecutter) and the [audreyfeldroy/cookiecutter-pypackage](https://github.com/audreyfeldroy/cookiecutter-pypackage) project template.
