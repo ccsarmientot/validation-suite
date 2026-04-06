@@ -6,7 +6,7 @@ from .stability import psi_check, csi_check
 # from .performance import backtesting_report
 from .results import ValidationResult
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 __all__ = [
     "compare_dataframes",

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "validation-suite"
-version = "0.1.1"
+version = "0.1.2"
 description = "A unified framework for consistent validation across multiple projects and use cases."
 readme = "README.md"
 authors = [
@@ -41,7 +41,7 @@ docs = [
 ]
 
 [tool.bumpversion]
-current_version = "0.1.1"
+current_version = "0.1.2"
 parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
 serialize = ["{major}.{minor}.{patch}"]
 search = "{current_version}"
