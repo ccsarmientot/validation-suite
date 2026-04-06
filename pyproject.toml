@@ -13,7 +13,7 @@ authors = [
 maintainers = [
   {name = "Cristian C. Sarmiento", email = "ccsarmientot@gmail.com"}
 ]
-classifiers = [
+classifiers = [ 
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Typing :: Typed",
@@ -31,6 +31,14 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest", "pytest-cov", "ruff", "mypy"]
+
+[dependency-groups]
+docs = [
+    "zensical",
+    "sphinx",
+    "mkdocs",
+    "mkdocstrings[python]",
+]
 
 [tool.bumpversion]
 current_version = "0.1.1"

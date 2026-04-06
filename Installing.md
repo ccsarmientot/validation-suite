@@ -170,3 +170,30 @@ major:
     uvx bump-my-version bump major
 ```
 
+## Documentation
+Make sure to have in pyproject.toml the next lines:
+```bash
+[dependency-groups]
+docs = [
+    "zensical",
+    "sphinx",
+    "mkdocs",
+    "mkdocstrings[python]",
+
+]
+```
+
+Then is easy, just use:
+```bash
+## Just version
+just docs-build
+
+## Direct code
+uv run --group docs zensical build --clean
+```
+
+To see live
+```bash
+## Just version
+just docs-serve
+```
