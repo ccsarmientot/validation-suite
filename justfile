@@ -102,6 +102,23 @@ clean-test:
 	rm -fr htmlcov/
 	rm -fr .pytest_cache
 
+# Sube la versión mínima (0.1.0 -> 0.1.1) - Errores pequeños
+patch:
+    uvx bump-my-version bump patch
+
+# Sube la versión media (0.1.0 -> 0.2.0) - Nueva funcionalidad
+minor:
+    uvx bump-my-version bump minor
+
+# Sube la versión mayor (0.1.0 -> 1.0.0) - Cambios que rompen todo
+major:
+    uvx bump-my-version bump major
+
+# Publish to TestPyPI
+publish-test:
+    uv build
+    uv publish --publish-url https://test.pypi.org/legacy/
+
 # Publish to PyPI (manual alternative to GitHub Actions)
 publish:
     uv build
