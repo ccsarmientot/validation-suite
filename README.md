@@ -36,7 +36,7 @@ To set up for local development:
 
 ```bash
 # Clone your fork
-git clone git@github.com:your_username/validation-suite.git
+git clone git@github.com:ccsarmientot/validation-suite.git
 cd validation-suite
 
 # Install in editable mode with live updates
