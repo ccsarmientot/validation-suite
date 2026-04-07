@@ -6,7 +6,7 @@ from .results import ValidationResult
 from .stability import csi_check, psi_check
 from .statistical import vif_check
 
-__version__ = "0.1.3"
+__version__ = "0.2.0"
 
 __all__ = [
     "compare_dataframes",
