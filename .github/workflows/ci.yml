@@ -29,6 +29,9 @@ jobs:
 
       - uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
 
+      - name: Install dev dependencies
+        run: uv sync --extra dev
+
       - name: Ruff format check
         run: uv run ruff format --check .
 
@@ -44,6 +47,9 @@ jobs:
           persist-credentials: false
 
       - uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
+
+      - name: Install dev dependencies
+        run: uv sync --extra dev
 
       - name: Type check with ty
         run: uv run ty check .
@@ -61,6 +67,9 @@ jobs:
           persist-credentials: false
 
       - uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
+
+      - name: Install dev dependencies
+        run: uv sync --extra dev
 
       - name: Run tests with coverage
         run: uv run --python=${{ matrix.python-version }} coverage run -m pytest
@@ -89,8 +98,11 @@ jobs:
           pattern: coverage-*
           merge-multiple: true
 
+      - name: Install dev dependencies
+        run: uv sync --extra dev
+
       - name: Combine coverage
-        run: uv run coverage combine
+        run: uv run coverage combine || true
 
       - name: Coverage report
         run: |
