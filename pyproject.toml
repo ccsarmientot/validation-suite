@@ -30,7 +30,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-cov", "ruff", "mypy", "ty", "tomli"]
+dev = ["pytest", "pytest-cov", "ruff", "mypy", "ty", "tomli", "coverage"]
 
 [dependency-groups]
 docs = [
