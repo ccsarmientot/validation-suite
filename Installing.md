@@ -199,8 +199,11 @@ just docs-serve
 ```
 
 ## Git hub tags and realeases:
-Change version or v0.1.3
+Change version and deploy to pypi via github actions
 ```bash
+just patch ## patch | minor | mayor
+git add .
+git commit -m "feat (version update)"
 git tag -a v0.1.3 -m "v0.1.3: PSI, CSI y backtesting_report"
 git push origin v0.1.3 
 ```
