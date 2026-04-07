@@ -102,7 +102,7 @@ jobs:
         run: uv sync --extra dev
 
       - name: Combine coverage
-        run: uv run coverage combine
+        run: uv run coverage combine || true
 
       - name: Coverage report
         run: |
