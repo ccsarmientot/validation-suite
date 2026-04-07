@@ -3,13 +3,13 @@
 import numpy as np
 import pandas as pd
 import pytest
-from validation_suite import backtesting_report
 
+from validation_suite import backtesting_report
 
 # ── Status: pass / fail ──────────────────────────────────────────────────────
 
-class TestBacktestingStatus:
 
+class TestBacktestingStatus:
     def test_good_model_returns_pass(self, good_model):
         y_true, y_score = good_model
         result = backtesting_report(y_true, y_score)
@@ -46,7 +46,6 @@ class TestBacktestingStatus:
 
 
 class TestDiscriminationMetrics:
-
     def test_auc_in_valid_range(self, good_model):
         y_true, y_score = good_model
         result = backtesting_report(y_true, y_score)
@@ -58,7 +57,7 @@ class TestDiscriminationMetrics:
         y_true, y_score = good_model
         result = backtesting_report(y_true, y_score)
 
-        auc  = result.summary_df["auc_roc"].iloc[0]
+        auc = result.summary_df["auc_roc"].iloc[0]
         gini = result.summary_df["gini"].iloc[0]
         assert abs(gini - (2 * auc - 1)) < 1e-10
 
@@ -124,7 +123,6 @@ class TestDiscriminationMetrics:
 
 
 class TestCalibrationMetrics:
-
     def test_good_model_hl_pvalue_above_alpha(self, good_model):
         y_true, y_score = good_model
         result = backtesting_report(y_true, y_score, alpha=0.05)
@@ -156,7 +154,7 @@ class TestCalibrationMetrics:
         result = backtesting_report(y_true, y_score)
 
         row = result.summary_df.iloc[0]
-        assert 0.0 <= row["default_rate_obs"]  <= 1.0
+        assert 0.0 <= row["default_rate_obs"] <= 1.0
         assert 0.0 <= row["default_rate_pred"] <= 1.0
 
     def test_observed_dr_matches_y_true_mean(self, good_model):
@@ -178,7 +176,6 @@ class TestCalibrationMetrics:
 
 
 class TestTrafficLight:
-
     def test_good_model_traffic_light_is_green(self, good_model):
         y_true, y_score = good_model
         result = backtesting_report(y_true, y_score)
@@ -216,7 +213,6 @@ class TestTrafficLight:
 
 
 class TestDetailsDict:
-
     def test_roc_curve_present_and_valid(self, good_model):
         y_true, y_score = good_model
         result = backtesting_report(y_true, y_score)
@@ -249,8 +245,11 @@ class TestDetailsDict:
 
         groups_df = result.details["hosmer_lemeshow"]["groups_df"]
         required = {
-            "n", "observed_defaults", "expected_defaults",
-            "mean_predicted_pd", "chi2_defaults",
+            "n",
+            "observed_defaults",
+            "expected_defaults",
+            "mean_predicted_pd",
+            "chi2_defaults",
         }
         assert required.issubset(groups_df.columns)
 
@@ -282,8 +281,12 @@ class TestDetailsDict:
 
         cal = result.details["calibration_table"]
         required = {
-            "n", "observed_dr", "mean_predicted_pd",
-            "min_score", "max_score", "ratio_pred_obs",
+            "n",
+            "observed_dr",
+            "mean_predicted_pd",
+            "min_score",
+            "max_score",
+            "ratio_pred_obs",
         }
         assert required.issubset(cal.columns)
 
@@ -306,7 +309,6 @@ class TestDetailsDict:
 
 
 class TestSummaryDf:
-
     def test_summary_has_one_row(self, good_model):
         y_true, y_score = good_model
         result = backtesting_report(y_true, y_score)
@@ -318,9 +320,17 @@ class TestSummaryDf:
         result = backtesting_report(y_true, y_score)
 
         required = {
-            "model_name", "n_observations", "n_defaults",
-            "auc_roc", "gini", "ks_statistic", "brier_score",
-            "hl_p_value", "binomial_p_value", "traffic_light", "status",
+            "model_name",
+            "n_observations",
+            "n_defaults",
+            "auc_roc",
+            "gini",
+            "ks_statistic",
+            "brier_score",
+            "hl_p_value",
+            "binomial_p_value",
+            "traffic_light",
+            "status",
         }
         assert required.issubset(result.summary_df.columns)
 
@@ -348,7 +358,7 @@ class TestSummaryDf:
         result = backtesting_report(y_true, y_score, n_hl_groups=5)
 
         groups_df = result.details["hosmer_lemeshow"]["groups_df"]
-        assert len(groups_df) <= 5   # <= because qcut may merge sparse bins
+        assert len(groups_df) <= 5  # <= because qcut may merge sparse bins
 
     def test_to_excel_generates_file(self, good_model, tmp_path):
         y_true, y_score = good_model
@@ -365,7 +375,6 @@ class TestSummaryDf:
 
 
 class TestInputValidation:
-
     def test_mismatched_lengths_raises(self):
         with pytest.raises(ValueError, match="same length"):
             backtesting_report(
@@ -415,7 +424,7 @@ class TestInputValidation:
         Verifies that alpha is actually wired into the status logic.
         """
         y_true, y_score = good_model
-        r_strict  = backtesting_report(y_true, y_score, alpha=0.50)
+        r_strict = backtesting_report(y_true, y_score, alpha=0.50)
         r_lenient = backtesting_report(y_true, y_score, alpha=0.001)
 
         # With alpha=0.001, almost impossible to fail calibration tests

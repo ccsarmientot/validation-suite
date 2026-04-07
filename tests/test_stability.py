@@ -2,15 +2,13 @@
 
 import numpy as np
 import pandas as pd
-import pytest
-from validation_suite import psi_check, csi_check
 
+from validation_suite import csi_check, psi_check
 
 # ── PSI: casos nominales ────────────────────────────────────────────────────
 
 
 class TestPsiNominal:
-
     def test_identical_distribution_is_stable(self, dist_stable):
         exp, act = dist_stable
         result = psi_check(exp, act, columns=["pd_score"])
@@ -55,14 +53,17 @@ class TestPsiNominal:
 
 
 class TestPsiSummaryDf:
-
     def test_summary_has_expected_columns(self, dist_stable):
         exp, act = dist_stable
         result = psi_check(exp, act, columns=["pd_score"])
 
         expected_cols = {
-            "variable", "psi_value", "flag",
-            "n_bins_shifted", "n_expected", "n_actual",
+            "variable",
+            "psi_value",
+            "flag",
+            "n_bins_shifted",
+            "n_expected",
+            "n_actual",
         }
         assert expected_cols.issubset(set(result.summary_df.columns))
 
@@ -79,9 +80,9 @@ class TestPsiSummaryDf:
         result = psi_check(exp, act, columns=["pd_score", "ltv"])
 
         flags = dict(zip(result.summary_df["variable"], result.summary_df["flag"]))
-        assert flags["ltv"]      == "STABLE"
+        assert flags["ltv"] == "STABLE"
         assert flags["pd_score"] == "UNSTABLE"
-        assert result.status     == "FAIL"
+        assert result.status == "FAIL"
 
     def test_psi_values_are_non_negative(self, dist_stable):
         """PSI is a sum of (p-q)*log(p/q) terms — always >= 0."""
@@ -96,20 +97,19 @@ class TestPsiSummaryDf:
 
         row = result.summary_df.iloc[0]
         assert row["n_expected"] == len(exp)
-        assert row["n_actual"]   == len(act)
+        assert row["n_actual"] == len(act)
 
 
 # ── PSI: details dict ───────────────────────────────────────────────────────
 
 
 class TestPsiDetails:
-
     def test_bin_detail_present_for_each_column(self, dist_multivar):
         exp, act = dist_multivar
         result = psi_check(exp, act, columns=["pd_score", "ltv"])
 
         assert "pd_score" in result.details["bin_detail"]
-        assert "ltv"      in result.details["bin_detail"]
+        assert "ltv" in result.details["bin_detail"]
 
     def test_bin_detail_has_correct_number_of_bins(self, dist_stable):
         exp, act = dist_stable
@@ -124,7 +124,9 @@ class TestPsiDetails:
         result = psi_check(exp, act, columns=["pd_score"])
 
         psi_from_summary = result.summary_df.iloc[0]["psi_value"]
-        psi_from_bins    = result.details["bin_detail"]["pd_score"]["psi_contribution"].sum()
+        psi_from_bins = result.details["bin_detail"]["pd_score"][
+            "psi_contribution"
+        ].sum()
         assert abs(psi_from_summary - psi_from_bins) < 1e-10
 
     def test_thresholds_in_details(self, dist_stable):
@@ -132,7 +134,7 @@ class TestPsiDetails:
         result = psi_check(exp, act, columns=["pd_score"])
 
         thresholds = result.details["thresholds"]
-        assert thresholds["stable"]   == 0.10
+        assert thresholds["stable"] == 0.10
         assert thresholds["moderate"] == 0.25
 
     def test_custom_bins_reflected_in_details(self, dist_stable):
@@ -147,7 +149,6 @@ class TestPsiDetails:
 
 
 class TestPsiAlternativeInputs:
-
     def test_accepts_series_input(self):
         rng = np.random.default_rng(10)
         exp = pd.Series(rng.beta(2, 18, 1000), name="pd_score")
@@ -193,11 +194,11 @@ class TestPsiAlternativeInputs:
 
 
 class TestCsiNominal:
-
     def test_stable_segment_passes(self, csi_frames):
         exp, act = csi_frames
         result = csi_check(
-            exp, act,
+            exp,
+            act,
             score_col="pd_score",
             segment_col="risk_grade",
         )
@@ -208,7 +209,8 @@ class TestCsiNominal:
     def test_unstable_segment_flagged(self, csi_frames):
         exp, act = csi_frames
         result = csi_check(
-            exp, act,
+            exp,
+            act,
             score_col="pd_score",
             segment_col="risk_grade",
         )
@@ -219,7 +221,8 @@ class TestCsiNominal:
     def test_overall_status_fail_when_any_segment_unstable(self, csi_frames):
         exp, act = csi_frames
         result = csi_check(
-            exp, act,
+            exp,
+            act,
             score_col="pd_score",
             segment_col="risk_grade",
         )
@@ -229,7 +232,8 @@ class TestCsiNominal:
     def test_warnings_identify_unstable_segments(self, csi_frames):
         exp, act = csi_frames
         result = csi_check(
-            exp, act,
+            exp,
+            act,
             score_col="pd_score",
             segment_col="risk_grade",
         )
@@ -239,7 +243,8 @@ class TestCsiNominal:
     def test_all_segments_present_in_summary(self, csi_frames):
         exp, act = csi_frames
         result = csi_check(
-            exp, act,
+            exp,
+            act,
             score_col="pd_score",
             segment_col="risk_grade",
         )
@@ -251,15 +256,18 @@ class TestCsiNominal:
 
 
 class TestCsiSummaryDf:
-
     def test_summary_has_expected_columns(self, csi_frames):
         exp, act = csi_frames
         result = csi_check(exp, act, score_col="pd_score", segment_col="risk_grade")
 
         expected_cols = {
-            "segment", "csi_value", "flag",
-            "n_expected", "n_actual",
-            "segment_pct_exp", "segment_pct_act",
+            "segment",
+            "csi_value",
+            "flag",
+            "n_expected",
+            "n_actual",
+            "segment_pct_exp",
+            "segment_pct_act",
         }
         assert expected_cols.issubset(set(result.summary_df.columns))
 
@@ -288,23 +296,21 @@ class TestCsiSummaryDf:
 
         for _, row in result.summary_df.iterrows():
             seg = str(row["segment"])
-            csi_from_bins = (
-                result.details["bin_detail"][seg]["psi_contribution"].sum()
-            )
-            assert abs(row["csi_value"] - csi_from_bins) < 1e-10, \
+            csi_from_bins = result.details["bin_detail"][seg]["psi_contribution"].sum()
+            assert abs(row["csi_value"] - csi_from_bins) < 1e-10, (
                 f"Mismatch in segment '{seg}'"
+            )
 
 
 # ── CSI: detalles y metadatos ────────────────────────────────────────────────
 
 
 class TestCsiDetails:
-
     def test_details_contain_score_and_segment_cols(self, csi_frames):
         exp, act = csi_frames
         result = csi_check(exp, act, score_col="pd_score", segment_col="risk_grade")
 
-        assert result.details["score_col"]   == "pd_score"
+        assert result.details["score_col"] == "pd_score"
         assert result.details["segment_col"] == "risk_grade"
 
     def test_bin_detail_keys_match_segments(self, csi_frames):
@@ -324,7 +330,6 @@ class TestCsiDetails:
 
 
 class TestCsiEdgeCases:
-
     def test_segment_missing_in_actual_adds_warning(self, csi_frames):
         """
         A new segment in expected not present in actual (or vice versa)
@@ -334,7 +339,8 @@ class TestCsiEdgeCases:
         exp, act = csi_frames
         act_missing = act[act["risk_grade"] != "High"].copy()
         result = csi_check(
-            exp, act_missing,
+            exp,
+            act_missing,
             score_col="pd_score",
             segment_col="risk_grade",
         )
@@ -353,7 +359,8 @@ class TestCsiEdgeCases:
     def test_custom_bins_reflected_in_bin_detail(self, csi_frames):
         exp, act = csi_frames
         result = csi_check(
-            exp, act,
+            exp,
+            act,
             score_col="pd_score",
             segment_col="risk_grade",
             bins=5,

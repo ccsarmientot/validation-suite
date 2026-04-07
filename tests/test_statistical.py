@@ -1,15 +1,13 @@
 import numpy as np
 import pandas as pd
-import pytest
+
 from validation_suite import vif_check
 
-
-FEATURES_LOW  = ["ltv", "dti", "credit_age", "util_rate"]
+FEATURES_LOW = ["ltv", "dti", "credit_age", "util_rate"]
 FEATURES_HIGH = ["income", "income_scaled", "dti", "credit_age"]
 
 
 class TestVifCasosNominales:
-
     def test_features_ortogonales_retorna_pass(self, df_low_collinearity):
         result = vif_check(df_low_collinearity, feature_cols=FEATURES_LOW)
 
@@ -44,7 +42,6 @@ class TestVifCasosNominales:
 
 
 class TestVifSummaryDf:
-
     def test_summary_contiene_todas_las_features(self, df_low_collinearity):
         result = vif_check(df_low_collinearity, feature_cols=FEATURES_LOW)
 
@@ -80,7 +77,6 @@ class TestVifSummaryDf:
 
 
 class TestVifEdgeCases:
-
     def test_una_sola_feature_vif_es_uno(self):
         """
         By definition VIF for a single predictor = 1.0.

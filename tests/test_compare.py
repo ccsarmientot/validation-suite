@@ -1,10 +1,9 @@
 import pandas as pd
-import pytest
+
 from validation_suite import compare_dataframes
 
 
 class TestCompareCasosNominales:
-
     def test_dataframes_identicos_retorna_pass(self, df_identical):
         ref, cha = df_identical
         result = compare_dataframes(ref, cha, key_cols=["obligor_id"])
@@ -32,7 +31,8 @@ class TestCompareCasosNominales:
     def test_labels_personalizados_aparecen_en_metadata(self, df_with_diff):
         ref, cha = df_with_diff
         result = compare_dataframes(
-            ref, cha,
+            ref,
+            cha,
             key_cols=["obligor_id"],
             label_reference="Model Owner Q1",
             label_challenger="Validator Dry Run",
@@ -42,7 +42,6 @@ class TestCompareCasosNominales:
 
 
 class TestCompareSchemaCheck:
-
     def test_columna_faltante_genera_warning(self, df_schema_mismatch):
         ref, cha = df_schema_mismatch
         result = compare_dataframes(ref, cha, key_cols=["obligor_id"])
@@ -66,14 +65,16 @@ class TestCompareSchemaCheck:
 
 
 class TestCompareEdgeCases:
-
     def test_dataframe_vacio_no_crashea(self):
         cols = ["obligor_id", "pd_score"]
         ref = pd.DataFrame(columns=cols)
         cha = pd.DataFrame(columns=cols)
         result = compare_dataframes(ref, cha, key_cols=["obligor_id"])
 
-        assert result.summary_df.empty or result.summary_df["rows_exceeding_tol"].sum() == 0
+        assert (
+            result.summary_df.empty
+            or result.summary_df["rows_exceeding_tol"].sum() == 0
+        )
 
     def test_solo_columna_clave_no_crashea(self):
         """Edge case: DataFrames with only the key column and no numeric columns."""
@@ -87,7 +88,12 @@ class TestCompareEdgeCases:
         ref, cha = df_identical
         result = compare_dataframes(ref, cha, key_cols=["obligor_id"])
 
-        expected_cols = {"column", "max_abs_diff", "mean_abs_diff", "rows_exceeding_tol"}
+        expected_cols = {
+            "column",
+            "max_abs_diff",
+            "mean_abs_diff",
+            "rows_exceeding_tol",
+        }
         assert expected_cols.issubset(set(result.summary_df.columns))
 
     def test_to_excel_genera_archivo(self, df_identical, tmp_path):

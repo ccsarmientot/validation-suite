@@ -1,6 +1,7 @@
 import pandas as pd
-import numpy as np
+
 from .results import ValidationResult
+
 
 def compare_dataframes(
     df_reference: pd.DataFrame,
@@ -24,10 +25,12 @@ def compare_dataframes(
     cols_ref = set(df_reference.columns)
     cols_cha = set(df_challenger.columns)
     missing_in_challenger = cols_ref - cols_cha
-    extra_in_challenger   = cols_cha - cols_ref
+    extra_in_challenger = cols_cha - cols_ref
 
     if missing_in_challenger:
-        warnings.append(f"Columns in {label_reference} but not in {label_challenger}: {missing_in_challenger}")
+        warnings.append(
+            f"Columns in {label_reference} but not in {label_challenger}: {missing_in_challenger}"
+        )
     if extra_in_challenger:
         warnings.append(f"Extra columns in {label_challenger}: {extra_in_challenger}")
 
@@ -36,14 +39,15 @@ def compare_dataframes(
 
     # 2. Align on key columns
     merged = df_reference[key_cols + common_cols].merge(
-        df_challenger[key_cols + common_cols],
-        on=key_cols, suffixes=("_ref", "_cha")
+        df_challenger[key_cols + common_cols], on=key_cols, suffixes=("_ref", "_cha")
     )
 
     # 3. Numeric diff per column
-    numeric_cols = df_reference[common_cols].select_dtypes(include="number").columns.tolist()
+    numeric_cols = (
+        df_reference[common_cols].select_dtypes(include="number").columns.tolist()
+    )
     diff_records = {}
-    diff_records['index'] = {
+    diff_records["index"] = {
         "max_abs_diff": 0,
         "mean_abs_diff": 0,
         "rows_exceeding_tol": 0,
@@ -57,13 +61,18 @@ def compare_dataframes(
                 "rows_exceeding_tol": int((diff > numeric_tol).sum()),
             }
 
-    summary_df = pd.DataFrame(diff_records).T.reset_index().rename(columns={"index": "column"})
+    summary_df = (
+        pd.DataFrame(diff_records).T.reset_index().rename(columns={"index": "column"})
+    )
     status = "PASS" if summary_df["rows_exceeding_tol"].max() == 0 else "FAIL"
 
     return ValidationResult(
         test_name="compare_dataframes",
         status=status,
         summary_df=summary_df,
-        details={"merged_df": merged, "schema_warnings": list(missing_in_challenger | extra_in_challenger)},
+        details={
+            "merged_df": merged,
+            "schema_warnings": list(missing_in_challenger | extra_in_challenger),
+        },
         warnings=warnings,
     )
