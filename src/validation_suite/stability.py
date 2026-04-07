@@ -2,8 +2,8 @@
 
 import numpy as np
 import pandas as pd
-from .results import ValidationResult
 
+from .results import ValidationResult
 
 # ── Umbrales SR 11-7 / industria estándar ──────────────────────────────────
 #
@@ -15,7 +15,7 @@ from .results import ValidationResult
 #
 # ---------------------------------------------------------------------------
 
-_PSI_STABLE   = 0.10
+_PSI_STABLE = 0.10
 _PSI_MODERATE = 0.25
 
 
@@ -35,23 +35,19 @@ def _compute_psi_series(
     if isinstance(bins, int):
         # Build bin edges from the *expected* distribution (development sample)
         _, bin_edges = np.histogram(expected.dropna(), bins=bins)
-        bin_edges[0]  = -np.inf
-        bin_edges[-1] =  np.inf
+        bin_edges[0] = -np.inf
+        bin_edges[-1] = np.inf
         labels = [
-            f"({bin_edges[i]:.4g}, {bin_edges[i+1]:.4g}]"
+            f"({bin_edges[i]:.4g}, {bin_edges[i + 1]:.4g}]"
             for i in range(len(bin_edges) - 1)
         ]
         exp_counts, _ = np.histogram(expected.dropna(), bins=bin_edges)
-        act_counts, _ = np.histogram(actual.dropna(),   bins=bin_edges)
+        act_counts, _ = np.histogram(actual.dropna(), bins=bin_edges)
     else:
         # Categorical: bins is the list of unique categories
-        labels     = bins
-        exp_counts = np.array([
-            (expected == cat).sum() for cat in labels
-        ])
-        act_counts = np.array([
-            (actual == cat).sum() for cat in labels
-        ])
+        labels = bins
+        exp_counts = np.array([(expected == cat).sum() for cat in labels])
+        act_counts = np.array([(actual == cat).sum() for cat in labels])
 
     n_exp = exp_counts.sum()
     n_act = act_counts.sum()
@@ -67,14 +63,16 @@ def _compute_psi_series(
         act_pct_safe / exp_pct_safe
     )
 
-    return pd.DataFrame({
-        "bin":              labels,
-        "expected_n":       exp_counts,
-        "actual_n":         act_counts,
-        "expected_pct":     exp_pct,
-        "actual_pct":       act_pct,
-        "psi_contribution": psi_contributions,
-    })
+    return pd.DataFrame(
+        {
+            "bin": labels,
+            "expected_n": exp_counts,
+            "actual_n": act_counts,
+            "expected_pct": exp_pct,
+            "actual_pct": act_pct,
+            "psi_contribution": psi_contributions,
+        }
+    )
 
 
 def _flag_psi(value: float) -> str:
@@ -90,10 +88,10 @@ def _flag_psi(value: float) -> str:
 
 def psi_check(
     expected: pd.DataFrame | pd.Series,
-    actual:   pd.DataFrame | pd.Series,
-    columns:  list[str] | None = None,
-    bins:     int = 10,
-    epsilon:  float = 1e-6,
+    actual: pd.DataFrame | pd.Series,
+    columns: list[str] | None = None,
+    bins: int = 10,
+    epsilon: float = 1e-6,
 ) -> ValidationResult:
     """
     Population Stability Index (PSI) — detects distributional shift between
@@ -144,8 +142,8 @@ def psi_check(
 
     # ── Per-variable PSI ──────────────────────────────────────────────
     summary_rows = []
-    bin_details  = {}
-    warnings     = []
+    bin_details = {}
+    warnings = []
 
     for col in columns:
         if col not in expected.columns or col not in actual.columns:
@@ -159,19 +157,21 @@ def psi_check(
             epsilon=epsilon,
         )
 
-        psi_value      = detail_df["psi_contribution"].sum()
-        flag           = _flag_psi(psi_value)
+        psi_value = detail_df["psi_contribution"].sum()
+        flag = _flag_psi(psi_value)
         n_bins_shifted = int((detail_df["psi_contribution"] > 0.01).sum())
 
         bin_details[col] = detail_df
-        summary_rows.append({
-            "variable":        col,
-            "psi_value":       psi_value,
-            "flag":            flag,
-            "n_bins_shifted":  n_bins_shifted,
-            "n_expected":      int(expected[col].notna().sum()),
-            "n_actual":        int(actual[col].notna().sum()),
-        })
+        summary_rows.append(
+            {
+                "variable": col,
+                "psi_value": psi_value,
+                "flag": flag,
+                "n_bins_shifted": n_bins_shifted,
+                "n_expected": int(expected[col].notna().sum()),
+                "n_actual": int(actual[col].notna().sum()),
+            }
+        )
 
         if flag in ("MODERATE", "UNSTABLE"):
             warnings.append(
@@ -180,11 +180,7 @@ def psi_check(
             )
 
     summary_df = pd.DataFrame(summary_rows)
-    status = (
-        "PASS"
-        if summary_df["flag"].isin(["STABLE"]).all()
-        else "FAIL"
-    )
+    status = "PASS" if summary_df["flag"].isin(["STABLE"]).all() else "FAIL"
 
     return ValidationResult(
         test_name="psi_check",
@@ -193,7 +189,7 @@ def psi_check(
         details={
             "bin_detail": bin_details,
             "thresholds": {
-                "stable":   _PSI_STABLE,
+                "stable": _PSI_STABLE,
                 "moderate": _PSI_MODERATE,
             },
             "bins": bins,
@@ -203,12 +199,12 @@ def psi_check(
 
 
 def csi_check(
-    expected:       pd.DataFrame,
-    actual:         pd.DataFrame,
-    score_col:      str,
-    segment_col:    str,
-    bins:           int = 10,
-    epsilon:        float = 1e-6,
+    expected: pd.DataFrame,
+    actual: pd.DataFrame,
+    score_col: str,
+    segment_col: str,
+    bins: int = 10,
+    epsilon: float = 1e-6,
 ) -> ValidationResult:
     """
     Characteristic Stability Index (CSI) — measures distributional shift
@@ -248,15 +244,15 @@ def csi_check(
     )
 
     summary_rows = []
-    bin_details  = {}
-    warnings     = []
+    bin_details = {}
+    warnings = []
 
     n_exp_total = len(expected)
     n_act_total = len(actual)
 
     for seg in segments:
         exp_seg = expected.loc[expected[segment_col] == seg, score_col]
-        act_seg = actual.loc[  actual[segment_col]   == seg, score_col]
+        act_seg = actual.loc[actual[segment_col] == seg, score_col]
 
         # Skip segments with no observations in either sample
         if exp_seg.empty or act_seg.empty:
@@ -274,18 +270,20 @@ def csi_check(
         )
 
         csi_value = detail_df["psi_contribution"].sum()
-        flag      = _flag_psi(csi_value)
+        flag = _flag_psi(csi_value)
 
         bin_details[str(seg)] = detail_df
-        summary_rows.append({
-            "segment":          seg,
-            "csi_value":        csi_value,
-            "flag":             flag,
-            "n_expected":       len(exp_seg),
-            "n_actual":         len(act_seg),
-            "segment_pct_exp":  len(exp_seg) / n_exp_total,
-            "segment_pct_act":  len(act_seg) / n_act_total,
-        })
+        summary_rows.append(
+            {
+                "segment": seg,
+                "csi_value": csi_value,
+                "flag": flag,
+                "n_expected": len(exp_seg),
+                "n_actual": len(act_seg),
+                "segment_pct_exp": len(exp_seg) / n_exp_total,
+                "segment_pct_act": len(act_seg) / n_act_total,
+            }
+        )
 
         if flag in ("MODERATE", "UNSTABLE"):
             warnings.append(
@@ -293,22 +291,18 @@ def csi_check(
             )
 
     summary_df = pd.DataFrame(summary_rows)
-    status = (
-        "PASS"
-        if summary_df["flag"].isin(["STABLE"]).all()
-        else "FAIL"
-    )
+    status = "PASS" if summary_df["flag"].isin(["STABLE"]).all() else "FAIL"
 
     return ValidationResult(
         test_name="csi_check",
         status=status,
         summary_df=summary_df,
         details={
-            "bin_detail":   bin_details,
-            "score_col":    score_col,
-            "segment_col":  segment_col,
+            "bin_detail": bin_details,
+            "score_col": score_col,
+            "segment_col": segment_col,
             "thresholds": {
-                "stable":   _PSI_STABLE,
+                "stable": _PSI_STABLE,
                 "moderate": _PSI_MODERATE,
             },
             "bins": bins,

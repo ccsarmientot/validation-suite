@@ -3,12 +3,12 @@
 import numpy as np
 import pandas as pd
 from sklearn.metrics import (
-    roc_auc_score,
     brier_score_loss,
+    roc_auc_score,
     roc_curve,
 )
-from .results import ValidationResult
 
+from .results import ValidationResult
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -72,16 +72,14 @@ def _hosmer_lemeshow(
         0,
     )
 
-    hl_stat = float(
-        (groups["chi2_defaults"] + groups["chi2_non_defaults"]).sum()
-    )
+    hl_stat = float((groups["chi2_defaults"] + groups["chi2_non_defaults"]).sum())
     df_stat = len(groups) - 2
     p_value = float(1 - chi2.cdf(hl_stat, df=df_stat))
 
     return {
         "statistic": hl_stat,
-        "p_value":   p_value,
-        "df":        df_stat,
+        "p_value": p_value,
+        "df": df_stat,
         "groups_df": groups,
     }
 
@@ -103,18 +101,18 @@ def _binomial_test_calibration(
 
     n = len(y_true)
     predicted_dr = float(y_score.mean())
-    observed_dr  = float(y_true.mean())
+    observed_dr = float(y_true.mean())
 
     # Standard error under H0
     se = np.sqrt(predicted_dr * (1 - predicted_dr) / n)
-    z_stat  = (observed_dr - predicted_dr) / se if se > 0 else 0.0
+    z_stat = (observed_dr - predicted_dr) / se if se > 0 else 0.0
     p_value = float(2 * (1 - norm.cdf(abs(z_stat))))
 
     return {
         "predicted_dr": predicted_dr,
-        "observed_dr":  observed_dr,
-        "z_stat":       z_stat,
-        "p_value":      p_value,
+        "observed_dr": observed_dr,
+        "z_stat": z_stat,
+        "p_value": p_value,
     }
 
 
@@ -168,12 +166,12 @@ def _pd_calibration_by_bucket(
 
 
 def backtesting_report(
-    y_true:           pd.Series | np.ndarray,
-    y_score:          pd.Series | np.ndarray,
-    model_name:       str = "Model",
-    n_hl_groups:      int = 10,
-    n_cal_buckets:    int = 10,
-    alpha:            float = 0.05,
+    y_true: pd.Series | np.ndarray,
+    y_score: pd.Series | np.ndarray,
+    model_name: str = "Model",
+    n_hl_groups: int = 10,
+    n_cal_buckets: int = 10,
+    alpha: float = 0.05,
 ) -> ValidationResult:
     """
     Comprehensive backtesting report for binary classification models
@@ -224,7 +222,7 @@ def backtesting_report(
         warnings    : list of metric-level findings
     """
     # ── Input validation ──────────────────────────────────────────────
-    y_true  = np.asarray(y_true,  dtype=float)
+    y_true = np.asarray(y_true, dtype=float)
     y_score = np.asarray(y_score, dtype=float)
 
     if len(y_true) != len(y_score):
@@ -242,9 +240,9 @@ def backtesting_report(
     warnings_list = []
 
     # ── Discrimination metrics ────────────────────────────────────────
-    auc   = float(roc_auc_score(y_true, y_score))
-    gini  = _gini(y_true, y_score)
-    ks    = _ks_statistic(y_true, y_score)
+    auc = float(roc_auc_score(y_true, y_score))
+    gini = _gini(y_true, y_score)
+    ks = _ks_statistic(y_true, y_score)
     brier = float(brier_score_loss(y_true, y_score))
 
     fpr, tpr, thresholds = roc_curve(y_true, y_score)
@@ -252,9 +250,7 @@ def backtesting_report(
 
     # Discrimination warnings (SR 11-7 general thresholds)
     if auc < 0.60:
-        warnings_list.append(
-            f"AUC-ROC = {auc:.4f} — below 0.60, poor discrimination."
-        )
+        warnings_list.append(f"AUC-ROC = {auc:.4f} — below 0.60, poor discrimination.")
     elif auc < 0.70:
         warnings_list.append(
             f"AUC-ROC = {auc:.4f} — moderate discrimination, monitor closely."
@@ -269,10 +265,10 @@ def backtesting_report(
         )
 
     # ── Calibration metrics ───────────────────────────────────────────
-    hl       = _hosmer_lemeshow(y_true, y_score, n_groups=n_hl_groups)
-    binom    = _binomial_test_calibration(y_true, y_score)
-    cal_tbl  = _pd_calibration_by_bucket(y_true, y_score, n_buckets=n_cal_buckets)
-    tl       = _traffic_light(binom["p_value"])
+    hl = _hosmer_lemeshow(y_true, y_score, n_groups=n_hl_groups)
+    binom = _binomial_test_calibration(y_true, y_score)
+    cal_tbl = _pd_calibration_by_bucket(y_true, y_score, n_buckets=n_cal_buckets)
+    tl = _traffic_light(binom["p_value"])
 
     # Calibration warnings
     if hl["p_value"] < alpha:
@@ -289,47 +285,51 @@ def backtesting_report(
             f"observed DR={binom['observed_dr']:.4%})."
         )
     if tl == "RED":
-        warnings_list.append(f"Traffic light: RED — significant calibration failure.")
+        warnings_list.append("Traffic light: RED — significant calibration failure.")
     elif tl == "YELLOW":
-        warnings_list.append(f"Traffic light: YELLOW — marginal calibration, monitor.")
+        warnings_list.append("Traffic light: YELLOW — marginal calibration, monitor.")
 
     # ── Status ────────────────────────────────────────────────────────
     discrimination_ok = auc >= 0.60 and gini >= 0.20
-    calibration_ok    = hl["p_value"] >= alpha and binom["p_value"] >= alpha
+    calibration_ok = hl["p_value"] >= alpha and binom["p_value"] >= alpha
     status = "PASS" if (discrimination_ok and calibration_ok) else "FAIL"
 
     # ── Summary DataFrame (one row, all scalar metrics) ───────────────
-    summary_df = pd.DataFrame([{
-        "model_name":       model_name,
-        "n_observations":   len(y_true),
-        "n_defaults":       int(y_true.sum()),
-        "default_rate_obs": binom["observed_dr"],
-        "default_rate_pred":binom["predicted_dr"],
-        # Discrimination
-        "auc_roc":          auc,
-        "gini":             gini,
-        "ks_statistic":     ks,
-        # Calibration
-        "brier_score":      brier,
-        "hl_statistic":     hl["statistic"],
-        "hl_p_value":       hl["p_value"],
-        "binomial_z":       binom["z_stat"],
-        "binomial_p_value": binom["p_value"],
-        "traffic_light":    tl,
-        "status":           status,
-    }])
+    summary_df = pd.DataFrame(
+        [
+            {
+                "model_name": model_name,
+                "n_observations": len(y_true),
+                "n_defaults": int(y_true.sum()),
+                "default_rate_obs": binom["observed_dr"],
+                "default_rate_pred": binom["predicted_dr"],
+                # Discrimination
+                "auc_roc": auc,
+                "gini": gini,
+                "ks_statistic": ks,
+                # Calibration
+                "brier_score": brier,
+                "hl_statistic": hl["statistic"],
+                "hl_p_value": hl["p_value"],
+                "binomial_z": binom["z_stat"],
+                "binomial_p_value": binom["p_value"],
+                "traffic_light": tl,
+                "status": status,
+            }
+        ]
+    )
 
     return ValidationResult(
         test_name="backtesting_report",
         status=status,
         summary_df=summary_df,
         details={
-            "roc_curve":        roc_df,
-            "hosmer_lemeshow":  hl,
-            "binomial_test":    binom,
-            "calibration_table":cal_tbl,
-            "traffic_light":    tl,
-            "alpha":            alpha,
+            "roc_curve": roc_df,
+            "hosmer_lemeshow": hl,
+            "binomial_test": binom,
+            "calibration_table": cal_tbl,
+            "traffic_light": tl,
+            "alpha": alpha,
         },
         warnings=warnings_list,
     )
