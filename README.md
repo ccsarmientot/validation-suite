@@ -10,13 +10,11 @@ A unified framework for consistent validation across multiple projects and use c
 
 ## Features
 
-* Instalación y configuración
 * `compare_dataframes` — Benchmarking / Dry Run vs Model Owner
 * `vif_check` — Test de multicolinealidad (supuestos de regresión)
 * `psi_check` — Population Stability Index (estabilidad de inputs)
 * `csi_check` — Characteristic Stability Index (estabilidad por segmento)
-* Exportar evidencia a Excel (trazabilidad para auditoría)
-* Flujo completo de validación
+* `backtesting_report` — Discriminación, calibración y traffic light
 
 ## Documentation
 

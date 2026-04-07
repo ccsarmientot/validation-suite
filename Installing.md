@@ -197,3 +197,10 @@ To see live
 ## Just version
 just docs-serve
 ```
+
+## Git hub tags and realeases:
+Change version or v0.1.3
+```bash
+git tag -a v0.1.3 -m "v0.1.3: PSI, CSI y backtesting_report"
+git push origin v0.1.3 
+```
