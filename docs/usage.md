@@ -52,4 +52,39 @@ results in:
 
 Columns with rows_exceeding_tol > 0 require additional analysis. A small numerical difference (e.g., max_abs_diff < 0.005) may be acceptable if it can be explained by rounding differences between platforms
 
+## 2. vif_check():
+
+Computes VIF for each feature. SR11-7 standard threshold = 10. Values > 10 indicate problematic multicollinearity.
+
+```python
+from validation_suite import vif_check
+
+rng2 = np.random.default_rng(7)
+n_obs = 1000
+
+df_features_clean = pd.DataFrame(
+    {
+        "ltv": rng2.uniform(0.30, 0.95, n_obs),
+        "dti": rng2.uniform(0.10, 0.60, n_obs),
+        "credit_age_yrs": rng2.uniform(1, 30, n_obs),
+        "utilization_rate": rng2.uniform(0, 1, n_obs),
+        "num_delinquencies": rng2.poisson(lam=0.4, size=n_obs).astype(float),
+    }
+)
+
+result_vif_clean = vif_check(
+    df_features_clean, feature_cols=FEATURE_COLS, threshold=10.0
+)
+```
+Messing with features and correlating it will produce as output something like:
+
+| # | Feature             | VIF          | Flag     |
+|---:|---------------------|--------------|----------|
+| 1 | dti                 | 20543658.327543 | HIGH     |
+| 5 | dti_annualized      | 20543522.726991 | HIGH     |
+| 0 | ltv                 | 6.611564     | MODERATE |
+| 2 | credit_age_yrs      | 3.856893     | OK       |
+| 3 | utilization_rate    | 3.500687     | OK       |
+| 4 | num_delinquencies   | 1.398969     | OK       |
+
 
